@@ -81,12 +81,18 @@ class MotionKeysInputMethodService : InputMethodService(),
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        if (::keyboardPreferences.isInitialized) {
+            keyboardPreferences.refresh()
+        }
         isKeyboardPaused = false
     }
 
     override fun onWindowShown() {
         super.onWindowShown()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        if (::keyboardPreferences.isInitialized) {
+            keyboardPreferences.refresh()
+        }
         isKeyboardPaused = false
     }
 

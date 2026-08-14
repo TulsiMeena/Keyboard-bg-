@@ -140,7 +140,14 @@ fun RealVideoPlayerView(
 
                             val player = MediaPlayer().apply {
                                 setSurface(surface)
-                                setDataSource(videoPath)
+                                val videoFile = File(videoPath)
+                                if (videoFile.exists() && videoFile.length() > 0L) {
+                                    java.io.FileInputStream(videoFile).use { fis ->
+                                        setDataSource(fis.fd)
+                                    }
+                                } else {
+                                    setDataSource(videoPath)
+                                }
                                 isLooping = true
                                 setVolume(0f, 0f) // Completely silent / muted
                                 setOnErrorListener { _, what, extra ->

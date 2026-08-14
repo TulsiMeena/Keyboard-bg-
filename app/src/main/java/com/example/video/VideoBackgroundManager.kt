@@ -139,43 +139,44 @@ class VideoBackgroundManager(private val context: Context) {
             }
             inputStream.close()
 
-            // Validate video using MediaMetadataRetriever
-            val retriever = MediaMetadataRetriever()
+            // Validate video using MediaMetadataRetriever (gracefully)
+            var durationMs = 0L
+            var width = 0
+            var height = 0
             try {
+                val retriever = MediaMetadataRetriever()
                 retriever.setDataSource(targetFile.absolutePath)
-                val hasVideo = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO)
-                if (hasVideo == null || hasVideo != "yes") {
-                    targetFile.delete()
-                    return VideoValidationResult.Error("Selected file does not contain valid video tracks.")
-                }
-
                 val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                val durationMs = durationStr?.toLongOrNull() ?: 0L
+                durationMs = durationStr?.toLongOrNull() ?: 0L
                 val widthStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
                 val heightStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
-                val width = widthStr?.toIntOrNull() ?: 0
-                val height = heightStr?.toIntOrNull() ?: 0
-
-                val displayName = originalName ?: "Custom MP4 Video"
-                val info = VideoInfo(
-                    title = displayName,
-                    filePath = targetFile.absolutePath,
-                    durationMs = durationMs,
-                    width = width,
-                    height = height,
-                    fileSizeBytes = targetFile.length()
-                )
-
-                // Save to preferences
-                prefs.setCustomVideo(targetFile.absolutePath, displayName)
-                VideoValidationResult.Success(info)
-            } finally {
+                width = widthStr?.toIntOrNull() ?: 0
+                height = heightStr?.toIntOrNull() ?: 0
                 try {
                     retriever.release()
-                } catch (e: Exception) {
-                    Log.w(TAG, "Error releasing retriever: ${e.message}")
-                }
+                } catch (_: Exception) {}
+            } catch (e: Exception) {
+                Log.w(TAG, "MediaMetadataRetriever note: ${e.message}")
             }
+
+            if (targetFile.length() == 0L) {
+                targetFile.delete()
+                return VideoValidationResult.Error("Video file is empty.")
+            }
+
+            val displayName = originalName ?: "Custom Motion Video"
+            val info = VideoInfo(
+                title = displayName,
+                filePath = targetFile.absolutePath,
+                durationMs = durationMs,
+                width = width,
+                height = height,
+                fileSizeBytes = targetFile.length()
+            )
+
+            // Save to preferences
+            prefs.setCustomVideo(targetFile.absolutePath, displayName)
+            VideoValidationResult.Success(info)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save video: ${e.message}", e)
             VideoValidationResult.Error("Failed to load video: ${e.localizedMessage ?: "Unknown error"}")

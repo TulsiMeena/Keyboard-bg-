@@ -37,6 +37,10 @@ class KeyboardPreferences private constructor(context: Context) {
 
     fun getSettings(): KeyboardSettings = loadSettings()
 
+    fun refresh() {
+        _settingsFlow.value = loadSettings()
+    }
+
     private fun loadSettings(): KeyboardSettings {
         return KeyboardSettings(
             selectedVideoPath = prefs.getString(KEY_VIDEO_PATH, null),

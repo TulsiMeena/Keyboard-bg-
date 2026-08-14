@@ -237,7 +237,7 @@ fun MotionKeysSettingsScreen() {
                 BackgroundVideoSection(
                     settings = settings,
                     customVideoInfo = customVideoInfo,
-                    onChooseVideo = { videoPickerLauncher.launch("video/mp4") },
+                    onChooseVideo = { videoPickerLauncher.launch("video/*") },
                     onRemoveCustomVideo = {
                         preferences.clearCustomVideo()
                         customVideoInfo = null
