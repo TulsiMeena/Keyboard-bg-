@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MotionKeys</string>
+    <string name="ime_service_name">MotionKeys Keyboard</string>
+    <string name="ime_settings">MotionKeys Settings</string>
+    <string name="enable_motionkeys">Enable MotionKeys</string>
+    <string name="select_motionkeys">Select MotionKeys</string>
+    <string name="keyboard_preview">Live Keyboard Preview</string>
+    <string name="choose_video">Choose Video</string>
+    <string name="background_video">Background Video</string>
+    <string name="animation_effects">Animation Effects</string>
+    <string name="keyboard_settings">Keyboard Settings</string>
+    <string name="video_selected">Background video selected</string>
+</resources>

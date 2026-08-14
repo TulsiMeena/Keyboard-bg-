@@ -1,0 +1,6 @@
+{
+  "name": "MotionKeys",
+  "description": "Custom Android Keyboard IME with animated video backgrounds, ripple touch effects, and transparent keys.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
