@@ -58,17 +58,30 @@ class MotionKeysInputMethodService : InputMethodService(),
     }
 
     override fun onCreateInputView(): View {
+        val density = resources.displayMetrics.density
+        val keyboardHeightPx = (290 * density).toInt()
+
+        window?.window?.decorView?.let { decorView ->
+            decorView.setViewTreeLifecycleOwner(this)
+            decorView.setViewTreeViewModelStoreOwner(this)
+            decorView.setViewTreeSavedStateRegistryOwner(this)
+        }
+
         val rootLayout = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                keyboardHeightPx
             )
+            minimumHeight = keyboardHeightPx
+            setViewTreeLifecycleOwner(this@MotionKeysInputMethodService)
+            setViewTreeSavedStateRegistryOwner(this@MotionKeysInputMethodService)
+            setViewTreeViewModelStoreOwner(this@MotionKeysInputMethodService)
         }
 
         val composeView = ComposeView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
+                keyboardHeightPx
             )
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnLifecycleDestroyed(lifecycle))
             setViewTreeLifecycleOwner(this@MotionKeysInputMethodService)
