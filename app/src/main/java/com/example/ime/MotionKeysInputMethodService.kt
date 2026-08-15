@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -28,6 +29,9 @@ import com.example.animation.KeyAnimationController
 import com.example.data.KeyboardPreferences
 import com.example.ui.keyboard.KeyboardView
 import com.example.ui.theme.MotionKeysTheme
+
+import android.view.ViewGroup
+import android.widget.FrameLayout
 
 class MotionKeysInputMethodService : InputMethodService(),
     LifecycleOwner,
@@ -54,7 +58,19 @@ class MotionKeysInputMethodService : InputMethodService(),
     }
 
     override fun onCreateInputView(): View {
+        val rootLayout = FrameLayout(this).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
         val composeView = ComposeView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnLifecycleDestroyed(lifecycle))
             setViewTreeLifecycleOwner(this@MotionKeysInputMethodService)
             setViewTreeSavedStateRegistryOwner(this@MotionKeysInputMethodService)
             setViewTreeViewModelStoreOwner(this@MotionKeysInputMethodService)
@@ -75,16 +91,43 @@ class MotionKeysInputMethodService : InputMethodService(),
                 }
             }
         }
-        return composeView
+
+        rootLayout.addView(composeView)
+        return rootLayout
+    }
+
+    override fun onEvaluateInputViewShown(): Boolean {
+        super.onEvaluateInputViewShown()
+        return true
+    }
+
+    override fun onEvaluateFullscreenMode(): Boolean {
+        return false
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         if (::keyboardPreferences.isInitialized) {
             keyboardPreferences.refresh()
         }
         isKeyboardPaused = false
+    }
+
+    override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(info, restarting)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        if (::keyboardPreferences.isInitialized) {
+            keyboardPreferences.refresh()
+        }
+        isKeyboardPaused = false
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+        isKeyboardPaused = true
     }
 
     override fun onWindowShown() {
